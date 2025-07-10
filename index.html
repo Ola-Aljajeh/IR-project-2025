@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>IR System Search</title>
+		<link
+			rel="icon"
+			href="https://raw.githubusercontent.com/iconic/open-iconic/master/svg/magnifying-glass.svg"
+			type="image/svg+xml"
+		/>
+		<style>
+			:root {
+				--bg-color: #ffffff;
+				--text-color: #2c3e50;
+				--field-bg: #f4f6f9;
+				--button-bg: #3498db;
+				--button-text: #fff;
+			}
+
+			[data-theme="dark"] {
+				--bg-color: #1e1e1e;
+				--text-color: #ecf0f1;
+				--field-bg: #2c3e50;
+				--button-bg: #2980b9;
+				--button-text: #ffffff;
+			}
+
+			body {
+				font-family: "Segoe UI", sans-serif;
+				background-color: var(--bg-color);
+				color: var(--text-color);
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100vh;
+				margin: 0;
+			}
+
+			.container {
+				background: var(--field-bg);
+				padding: 40px;
+				border-radius: 12px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+				width: 480px;
+			}
+
+			h2 {
+				text-align: center;
+				margin-bottom: 30px;
+			}
+
+			label {
+				font-weight: bold;
+				margin-top: 15px;
+				display: block;
+			}
+
+			input[type="text"],
+			select {
+				width: 100%;
+				padding: 12px;
+				margin-top: 8px;
+				margin-bottom: 20px;
+				border: 1px solid #ccc;
+				border-radius: 6px;
+				font-size: 16px;
+				box-sizing: border-box;
+			}
+
+			#suggestions {
+				background-color: var(--bg-color);
+				border: 1px solid #ccc;
+				border-top: none;
+				max-height: 150px;
+				overflow-y: auto;
+				position: absolute;
+				width: calc(100% - 84px);
+				z-index: 10;
+				display: none;
+			}
+
+			#suggestions div {
+				padding: 10px;
+				cursor: pointer;
+			}
+
+			#suggestions div:hover {
+				background-color: #ddd;
+			}
+
+			button {
+				background-color: var(--button-bg);
+				color: var(--button-text);
+				padding: 12px;
+				font-size: 16px;
+				border: none;
+				border-radius: 6px;
+				cursor: pointer;
+				width: 100%;
+				margin-top: 10px;
+			}
+
+			button:hover {
+				background-color: #2169af;
+			}
+
+			.theme-toggle {
+				margin-top: 20px;
+				text-align: center;
+			}
+
+			.theme-toggle button {
+				width: auto;
+				padding: 8px 16px;
+				font-size: 14px;
+				margin-top: 10px;
+				background: var(--button-bg);
+				color: var(--button-text);
+			}
+
+			.relative {
+				position: relative;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container" id="app-container">
+			<h2>Information Retrieval System</h2>
+			<form id="searchForm" method="post">
+				<label for="query">Enter your query:</label>
+				<div class="relative">
+					<input
+						type="text"
+						id="query"
+						name="query"
+						required
+						autocomplete="off"
+					/>
+					<div id="suggestions"></div>
+				</div>
+
+				<label for="dataset">Select Dataset:</label>
+				<select id="dataset" name="dataset">
+					<option value="clinical_trials">Clinical Trials</option>
+					<option value="antique">ANTIQUE</option>
+				</select>
+
+				<label for="method">Choose Retrieval Method:</label>
+				<select id="method" name="method">
+					<option value="tfidf">TF-IDF</option>
+					<option value="bm25">BM25</option>
+					<option value="bert">BERT</option>
+					<option value="hybrid">Hybrid (BM25 + BERT)</option>
+					<option value="rag">RAG (Retrieval-Augmented Generation)</option>
+				</select>
+
+				<button type="submit">Search</button>
+			</form>
+
+			<div class="theme-toggle">
+				<button onclick="toggleTheme()">🌓 Toggle Theme</button>
+			</div>
+		</div>
+
+		<script>
+			function toggleTheme() {
+				const body = document.body
+				if (body.getAttribute("data-theme") === "dark") {
+					body.removeAttribute("data-theme")
+					localStorage.setItem("theme", "light")
+				} else {
+					body.setAttribute("data-theme", "dark")
+					localStorage.setItem("theme", "dark")
+				}
+			}
+
+			// Apply saved theme
+			window.onload = function () {
+				const theme = localStorage.getItem("theme")
+				if (theme === "dark") {
+					document.body.setAttribute("data-theme", "dark")
+				}
+			}
+
+			// Autocomplete suggestions
+			const input = document.getElementById("query")
+			const suggestions = document.getElementById("suggestions")
+			const datasetSelect = document.getElementById("dataset")
+
+			input.addEventListener("input", async function () {
+				const q = this.value
+				const dataset = datasetSelect.value
+				if (q.length < 2) {
+					suggestions.style.display = "none"
+					return
+				}
+
+				const res = await fetch(`/suggest?q=${q}&dataset=${dataset}`)
+				const data = await res.json()
+
+				if (data.length === 0) {
+					suggestions.style.display = "none"
+					return
+				}
+
+				suggestions.innerHTML = ""
+				data.forEach((item) => {
+					const div = document.createElement("div")
+					div.textContent = item
+					div.onclick = () => {
+						input.value = item
+						suggestions.style.display = "none"
+					}
+					suggestions.appendChild(div)
+				})
+				suggestions.style.display = "block"
+			})
+
+			document.addEventListener("click", function (e) {
+				if (!document.getElementById("query").contains(e.target)) {
+					suggestions.style.display = "none"
+				}
+			})
+
+			document
+				.getElementById("searchForm")
+				.addEventListener("submit", function (e) {
+					const method = document.getElementById("method").value
+					if (method === "rag") {
+						this.action = "/results" // RAG is handled internally now
+					} else {
+						this.action = "/results"
+					}
+				})
+		</script>
+	</body>
+</html>

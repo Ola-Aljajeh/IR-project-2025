@@ -1,0 +1,30 @@
+1	Liposarcoma CDK4 Amplification 38-year-old male
+2	Colon cancer KRAS (G13D), BRAF (V600E) 52-year-old male
+3	Meningioma NF2 (K322), AKT1(E17K) 45-year-old female
+4	Breast cancer FGFR1 Amplification, PTEN (Q171) 67-year-old female
+5	Melanoma BRAF (V600E), CDKN2A Deletion 45-year-old female
+6	Melanoma NRAS (Q61K) 55-year-old male
+7	Lung cancer EGFR (L858R) 50-year-old female
+8	Lung cancer EML4-ALK Fusion transcript 52-year-old male
+9	Gastrointestinal stromal tumor KIT Exon 9 (A502_Y503dup) 49-year-old female
+10	Lung adenocarcinoma KRAS (G12C) 61-year-old female
+11	Gastric cancer PIK3CA (E545K) 54-year-old male
+12	Colon cancer BRAF (V600E) 35-year-old male
+13	Cholangiocarcinoma BRCA2 72-year-old male
+14	Cholangiocarcinoma IDH1 (R132H) 64-year-old male
+15	Cervical cancer STK11 26-year-old female
+16	Pancreatic cancer CDKN2A 54-year-old male
+17	Prostate cancer PTEN Inactivating 81-year-old male
+18	Pancreatic cancer CDK6 Amplification 48-year-old male
+19	Colorectal cancer FGFR1 Amplification 35-year-old female
+20	Liposarcoma MDM2 Amplification 26-year-old male
+21	Lung adenocarcinoma ALK Fusion 64-year-old female
+22	Lung cancer ERBB2 Amplification 70-year-old male
+23	Breast cancer PTEN Loss 54-year-old female
+24	Lung cancer NTRK1 58-year-old female
+25	Lung adenocarcinoma MET Amplification 48-year-old male
+26	Breast cancer NRAS Amplification 35-year-old female
+27	Pancreatic adenocarcinoma KRAS, TP53 49-year-old female
+28	Pancreatic ductal adenocarcinoma ERBB3 73-year-old female
+29	Ampullary carcinoma KRAS 61-year-old male
+30	Pancreatic adenocarcinoma RB1, TP53, KRAS 57-year-old female

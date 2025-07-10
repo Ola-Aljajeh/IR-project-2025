@@ -1,0 +1,112 @@
+<!-- results.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Search Results</title>
+  <link rel="icon" href="https://raw.githubusercontent.com/iconic/open-iconic/master/svg/magnifying-glass.svg" type="image/svg+xml" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      margin: 0;
+      padding: 30px;
+    }
+    .text-center { text-align: center; }
+    .btn { padding: 8px 14px; font-size: 14px; border-radius: 4px; background-color: #007bff; color: white; margin: 5px; text-decoration: none; }
+    .btn:hover { background-color: #0056b3; }
+    .btn-purple { background-color: #6f42c1; }
+    .btn-purple:hover { background-color: #563d7c; }
+    .btn-pink { background-color: #d63384; }
+    .btn-pink:hover { background-color: #ad296d; }
+    select { padding: 5px; font-size: 14px; margin-left: 5px; }
+    .cluster { background-color: #ffffff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05); }
+    .cluster h4 { margin: 0 0 10px 0; font-size: 16px; }
+    .topic-label { background-color: #d4edda; color: #155724; padding: 5px 10px; border-radius: 4px; font-size: 13px; margin-left: 10px; }
+    .result { background-color: #f9f9f9; border: 1px solid #ccc; border-radius: 6px; padding: 15px; margin-bottom: 10px; }
+    .meta { font-size: 13px; color: #666; margin-bottom: 8px; }
+    .metric-bar { background-color: #e9ecef; padding: 10px; margin: 20px auto; width: 90%; border-radius: 5px; text-align: center; font-size: 15px; color: #333; }
+  </style>
+</head>
+<body>
+  <h2 class="text-center">Search Results</h2>
+  <div class="text-center">
+    <p><strong>Query:</strong> {{ query }}</p>
+    <p><strong>Dataset:</strong> {{ dataset }}</p>
+    <p><strong>Method:</strong> {{ method }}</p>
+    <p>🔧 Debug k = {{ k }}, View = {{ view }}</p>
+
+    <a href="/" class="btn">&#8592; Back to Search</a>
+    <a href="/download" class="btn btn-purple">&#128190; Download Results</a>
+    <a href="/download_topics" class="btn btn-pink">&#129504; Download Topics</a>
+
+    <form method="POST" action="/results" style="display:inline-block;">
+      <input type="hidden" name="query" value="{{ query }}">
+      <input type="hidden" name="method" value="{{ method }}">
+      <input type="hidden" name="dataset" value="{{ dataset }}">
+      <input type="hidden" name="view" value="{{ view }}">
+      <label># Clusters:</label>
+      <select name="k" onchange="this.form.submit()">
+        {% for option in range(2, 11) %}
+          <option value="{{ option }}" {% if option == k %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <form method="POST" action="/results" style="display:inline-block;margin-left:10px;">
+      <input type="hidden" name="query" value="{{ query }}">
+      <input type="hidden" name="method" value="{{ method }}">
+      <input type="hidden" name="dataset" value="{{ dataset }}">
+      <input type="hidden" name="k" value="{{ k }}">
+      <label>View:</label>
+      <select name="view" onchange="this.form.submit()">
+        <option value="clustered" {% if view == 'clustered' %}selected{% endif %}>Clustered</option>
+        <option value="flat" {% if view == 'flat' %}selected{% endif %}>Flat</option>
+      </select>
+    </form>
+  </div>
+
+  {% if eval_metrics and eval_metrics.purity is defined %}
+  <div class="metric-bar">
+    <strong>Evaluation Metrics:</strong>
+    Purity: {{ '%.2f' % (eval_metrics.purity | float) }},
+    NMI: {{ '%.2f' % (eval_metrics.nmi | float) }},
+    ARI: {{ '%.2f' % (eval_metrics.ari | float) }}
+  </div>
+  {% endif %}
+
+  {% if view == 'flat' or method == 'rag' %}
+    {% if results|length == 0 %}<p style="text-align: center;">⚠️ No results found.</p>{% endif %}
+    {% for result in results %}
+    <div class="result">
+      <div class="meta">
+        <strong>Doc ID:</strong> {{ result['id'] }}
+        {% if result['score'] is defined %} | <strong>Score:</strong> {{ '%.4f' % (result['score'] | float) }} {% endif %}
+      </div>
+      <div>{{ result['title'] if result['title'] is defined else '' }}</div>
+      <div>{{ result['text'] }}</div>
+    </div>
+    {% endfor %}
+  {% else %}
+    {% for cid, docs in clustered_results.items() %}
+    <div class="cluster">
+      <h4>
+        &#128193; Cluster {{ cid }} ({{ docs | length }} docs)
+        {% set label, score = cluster_labels[cid] %}
+        <span class="topic-label">{{ label }} ({{ '%.2f' % (score | float) }})</span>
+      </h4>
+      {% for result in docs %}
+      <div class="result">
+        <div class="meta">
+          <strong>Doc ID:</strong> {{ result['id'] }}
+          {% if result['score'] is defined %} | <strong>Score:</strong> {{ '%.4f' % (result['score'] | float) }} {% endif %}
+        </div>
+        <div>{{ result['text'] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  {% endif %}
+</body>
+</html>
